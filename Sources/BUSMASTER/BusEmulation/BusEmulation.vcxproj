@@ -136,7 +136,8 @@
     </Link>
     <PostBuildEvent>
       <Message>Performing registration</Message>
-      <Command>"$(SolutionDir)BIN/$(OutDir)BusEmulation.exe" /RegServer</Command>
+      <Command>"$(SolutionDir)BIN/$(OutDir)BusEmulation.exe" /RegServer
+if %errorlevel% neq 0 exit 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -188,7 +189,8 @@
     </Link>
     <PostBuildEvent>
       <Message>Performing registration</Message>
-      <Command>"$(SolutionDir)BIN/$(OutDir)BusEmulation.exe" /RegServer</Command>
+      <Command>"$(SolutionDir)BIN/$(OutDir)BusEmulation.exe" /RegServer
+if %errorlevel% neq 0 exit 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='busmaster_debug|Win32'">
@@ -239,7 +241,8 @@
     </Link>
     <PostBuildEvent>
       <Message>Performing Registration</Message>
-      <Command>"$(SolutionDir)BIN/$(OutDir)BusEmulation.exe" /RegServer</Command>
+      <Command>"$(SolutionDir)BIN/$(OutDir)BusEmulation.exe" /RegServer
+if %errorlevel% neq 0 exit 0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
