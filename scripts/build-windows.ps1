@@ -1,7 +1,3 @@
-param(
-    [switch]$SkipIxxatDriver
-)
-
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
@@ -33,44 +29,13 @@ foreach ($solution in $solutions) {
         throw "Build solution not found: $solutionPath"
     }
 
-    $buildSolutionPath = $solutionPath
-    $temporarySolutionPath = $null
-    if ($SkipIxxatDriver -and $solution -eq 'Sources\BUSMASTER\BUSMASTER.sln') {
-        $solutionContent = [System.IO.File]::ReadAllText($solutionPath)
-        $ixxatReleaseBuildMapping = [regex]::new(
-            '(?m)^\s*\{F920F538-A4B0-4EB6-81FC-6011E9C1806F\}\.Release\|Win32\.Build\.0 = Release\|Win32\r?\n'
-        )
-
-        if (-not $ixxatReleaseBuildMapping.IsMatch($solutionContent)) {
-            throw "Could not find the IXXAT Release|Win32 build mapping in $solutionPath"
-        }
-
-        $solutionContent = $ixxatReleaseBuildMapping.Replace($solutionContent, '')
-        $temporarySolutionPath = Join-Path (Split-Path -Parent $solutionPath) "BUSMASTER.CI.$([guid]::NewGuid().ToString('N')).sln"
-        [System.IO.File]::WriteAllText(
-            $temporarySolutionPath,
-            $solutionContent,
-            [System.Text.UTF8Encoding]::new($true)
-        )
-        $buildSolutionPath = $temporarySolutionPath
-        Write-Host 'Skipping CAN_IXXAT_VCI: the IXXAT VCI SDK is not provisioned on CI runners.'
-    }
-
     Write-Host "Building $solution (Release|Win32)"
-    try {
-        & $msbuildPath $buildSolutionPath /m /nologo /verbosity:minimal `
-            '/p:Configuration=Release' `
-            '/p:Platform=Win32' `
-            '/p:PlatformToolset=v143'
-        $buildExitCode = $LASTEXITCODE
-    }
-    finally {
-        if ($temporarySolutionPath) {
-            Remove-Item -LiteralPath $temporarySolutionPath
-        }
-    }
+    & $msbuildPath $solutionPath /m /nologo /verbosity:minimal `
+        '/p:Configuration=Release' `
+        '/p:Platform=Win32' `
+        '/p:PlatformToolset=v143'
 
-    if ($buildExitCode -ne 0) {
-        exit $buildExitCode
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
     }
 }

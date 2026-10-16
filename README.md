@@ -38,7 +38,6 @@ Think of it as a free, open-source alternative to commercial bus tools such as V
 **Build**
 
 1. Recommended: run `powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1`. It builds `Sources\Kernel\BusmasterKernel.sln` and `Sources\BUSMASTER\BUSMASTER.sln` as `Release|Win32` with the v143 toolset.
-   - Add `-SkipIxxatDriver` if you don't have the IXXAT VCI SDK installed — the script then removes the IXXAT driver from the build (this is what CI does, since the IXXAT SDK is not publicly distributable).
 2. Alternatively, open `Sources\Kernel\BusmasterKernel.sln` and `Sources\BUSMASTER\BUSMASTER.sln` in Visual Studio and build them yourself.
 3. Legacy alternative: `Sources\build.bat` builds the Kernel, the BUSMASTER application (plus Language DLLs, LDF Editor/Viewer and Format Converters, using flex and bison from the `Tools` folder) in Release configuration.
 
