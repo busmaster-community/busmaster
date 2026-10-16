@@ -1,3 +1,8 @@
+param(
+    [ValidateRange(1, 1024)]
+    [int]$MaxCpuCount = [Environment]::ProcessorCount
+)
+
 $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
@@ -29,8 +34,8 @@ foreach ($solution in $solutions) {
         throw "Build solution not found: $solutionPath"
     }
 
-    Write-Host "Building $solution (Release|Win32)"
-    & $msbuildPath $solutionPath /m /nologo /verbosity:minimal `
+    Write-Host "Building $solution (Release|Win32; MSBuild nodes: $MaxCpuCount)"
+    & $msbuildPath $solutionPath "/m:$MaxCpuCount" /nologo /verbosity:minimal `
         '/p:Configuration=Release' `
         '/p:Platform=Win32' `
         '/p:PlatformToolset=v143'

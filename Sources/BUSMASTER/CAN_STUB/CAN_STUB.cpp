@@ -84,6 +84,10 @@ BOOL CCAN_STUBApp::InitInstance()
 static CRITICAL_SECTION sg_CSBroker;
 static HRESULT          sg_hResult          = S_FALSE;
 static HANDLE           sg_hNotifyFinish    = nullptr;
+/* Set when the broker thread is gone (simulation engine could not be
+   created). Any later operation must fail fast instead of waiting
+   forever on sg_hNotifyFinish, which nobody will signal anymore. */
+static BOOL             sg_bBrokerFailed    = FALSE;
 static STCAN_MSG*       sg_pouCanTxMsg      = nullptr;
 static SYSTEMTIME       sg_CurrSysTime      = {'\0'};
 static LARGE_INTEGER    sg_QueryTickCount;
@@ -464,6 +468,13 @@ HRESULT PerformAnOperation(BYTE bActionCode)
 
     if ( TryEnterCriticalSection ( &sg_CSBroker ) )
     {
+        if ( sg_bBrokerFailed )
+        {
+            // Broker thread is gone, nobody would ever signal sg_hNotifyFinish
+            LeaveCriticalSection ( &sg_CSBroker );
+            return S_FALSE;
+        }
+
         // Lock so that no other thread may use the common resources
         //EnterCriticalSection ( &sg_CSBroker );
 
@@ -778,6 +789,13 @@ HRESULT CDIL_CAN_STUB::CAN_SendMsg(DWORD dwClientID, const STCAN_MSG& sCanTxMsg)
     // Lock so that no other thread may use the common resources
     EnterCriticalSection(&sg_CSBroker);
 
+    if ( sg_bBrokerFailed )
+    {
+        // Broker thread is gone, nobody would ever signal sg_hNotifyFinish
+        LeaveCriticalSection(&sg_CSBroker);
+        return S_FALSE;
+    }
+
     // Assign parameter
     STCAN_MSG sTmpMsg = sCanTxMsg;
     sg_pouCanTxMsg = &sTmpMsg;
@@ -853,6 +871,9 @@ HRESULT CDIL_CAN_STUB::CAN_PerformInitOperations(void)
     // Initialize the critical section
     InitializeCriticalSection(&sg_CSBroker);
 
+    // A fresh broker thread is about to start, clear any previous failure
+    sg_bBrokerFailed = FALSE;
+
     // Create the notification event
     sg_hNotifyFinish = CreateEvent(nullptr, false, false, nullptr);
     if (nullptr != sg_hNotifyFinish)
@@ -896,6 +917,8 @@ HRESULT CDIL_CAN_STUB::CAN_PerformClosureOperations(void)
     CAN_DeselectHwInterface();
     // Then terminate the broker thread
     sg_sBrokerObjBusEmulation.bTerminateThread();
+    // The broker thread is gone, fail any future operation fast
+    sg_bBrokerFailed = TRUE;
     // Close the notification event
     if (nullptr != sg_hNotifyFinish)
     {
@@ -1011,6 +1034,17 @@ DWORD WINAPI BrokerThreadBusEmulation(LPVOID pVoid)
                                IID_ISimENG, (LPVOID*) &pISimENG);
     if ((S_OK != hResult) || (nullptr == pISimENG))
     {
+        /* Propagate the failure to any thread waiting in PerformAnOperation,
+        otherwise it blocks forever on sg_hNotifyFinish (classic hang when
+        the SimENG local server EXE is missing or not registered). */
+        if (S_OK == hResult)
+        {
+            hResult = E_FAIL;
+        }
+        sg_hResult = hResult;
+        // The broker thread is about to exit, fail all future operations fast
+        sg_bBrokerFailed = TRUE;
+        SetEvent(sg_hNotifyFinish);
         return 0L;
     }
 
