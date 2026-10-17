@@ -82,35 +82,9 @@ typedef struct struct_STATUSMSG
     unsigned long  dwStatusInfoFlags;    // Flagfield of status information (UCI_FLXSTSINFO_???)
 } s_STATUSMSG, *ps_STATUSMSG;
 
-enum
-{
-    DRIVER_CAN_STUB = 0,
-    DRIVER_CAN_PEAK_USB,
-    DRIVER_CAN_ICS_NEOVI,
-    DRIVER_CAN_ETAS_BOA,
-    DRIVER_CAN_ETAS_ES581,
-    DRIVER_CAN_VECTOR_XL,
-    DRIVER_CAN_KVASER_CAN,
-    DRIVER_CAN_MHS,
-    DRIVER_CAN_NSI,
-    DRIVER_CAN_IXXAT,
-    DRIVER_CAN_VSCOM,
-    DRIVER_CAN_IVIEW,
-    DRIVER_CAN_ISOLAR,
-    DIL_TOTAL,          // Its value must be <= MAX_DILS
-    DAL_NONE            = ~0x0
-};
-
-enum
-{
-    DRIVER_LIN_ISOLAR_EVE_VLIN = 0,
-    DRIVER_LIN_VECTOR_XL,
-    DRIVER_LIN_ETAS_BOA,
-    DRIVER_LIN_PEAK_USB,
-    DRIVER_LIN_KVASER,
-    DIL_LIN_TOTAL,
-    DAL_LIN_NONE            = ~0x0
-};
+// CAN and LIN driver IDs live in DIL_DriverCatalog.h - the single source
+// of truth for the driver list shared with the DIL and the application.
+#include "DIL_DriverCatalog.h"
 
 typedef enum FILTER_TYPE
 {

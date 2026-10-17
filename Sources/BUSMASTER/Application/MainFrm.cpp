@@ -55,6 +55,7 @@
 #include "InterfaceGetter.h"
 //#include "DataTypes/MsgBufAll_DataTypes.h"
 #include "DataTypes/Base_WrapperErrorLogger.h"
+#include "DataTypes/DIL_DriverCatalog.h"
 #include "Utility/Utility.h"
 #include "Utility/Utility_Thread.h"
 #include "Utility/WaitIndicator.h"
@@ -178,37 +179,8 @@ SMSGENTRY* CTxMsgWndJ1939::m_psMsgRoot = nullptr;
 
 #define	USE_MSG_AUTOIT_REQUEST				WM_USER + 1000
 
-enum
-{
-    DRIVER_CAN_STUB = 0,
-    DRIVER_CAN_PEAK_USB,
-    DRIVER_CAN_ICS_NEOVI,
-    DRIVER_CAN_ETAS_BOA,
-    DRIVER_CAN_ETAS_ES581,
-    DRIVER_CAN_ETAS_ES5814,
-	DRIVER_CAN_ETAS_ES5821,
-    DRIVER_CAN_VECTOR_XL,
-    DRIVER_CAN_KVASER_CAN,
-    DRIVER_CAN_MHS,
-    DRIVER_CAN_NSI,
-    DRIVER_CAN_IXXAT,
-    DRIVER_CAN_VSCOM,
-    DRIVER_CAN_IVIEW,
-    DRIVER_CAN_ISOLAR,
-    DIL_TOTAL,          // Its value must be <= MAX_DILS
-    DAL_NONE = ~0x0
-};
-
-enum
-{
-    DRIVER_LIN_ISOLAR_EVE_VLIN = 0,
-    DRIVER_LIN_VECTOR_XL,
-    DRIVER_LIN_ETAS_BOA,
-    DRIVER_LIN_PEAK_USB,
-    DRIVER_LIN_KVASER,
-    DIL_LIN_TOTAL,
-    DAL_LIN_NONE = ~0x0
-};
+// CAN and LIN driver IDs live in DataTypes/DIL_DriverCatalog.h - the
+// single source of truth for the driver list shared with the DIL.
 
 
 
@@ -13472,50 +13444,34 @@ void CMainFrame::LoadControllerConfigData(SCONTROLLER_DETAILS& sController, xmlN
 INT CMainFrame::nGetControllerID(std::string strDriverName)
 {
     INT nDriverID = -1;
-    if(strDriverName == "ETAS BOA")
+
+    /* Match against the DIL list reported by the driver interface - the
+     * menu labels with the '&' accelerator removed, i.e. the very text
+     * vGetControllerName writes into the configuration file. */
+    for (int i = 0; i < m_nDILCount; i++)
     {
-        nDriverID = DRIVER_CAN_ETAS_BOA;
+        CString strDriverLabel(m_ouList[i].m_acName.c_str());
+        strDriverLabel.Replace("&", "");
+        if (strDriverName == strDriverLabel.GetString())
+        {
+            nDriverID = m_ouList[i].m_dwDriverID;
+            break;
+        }
     }
-    else if (strDriverName == "Vector XL" )
-    {
-        nDriverID = DRIVER_CAN_VECTOR_XL;
-    }
-    else if(strDriverName == "ETAS ES581" || strDriverName == "ETAS ES581.3")
+
+    /* "ETAS ES581" is a legacy alias written by older BUSMASTER versions
+     * before the menu label became "ETAS ES581.3" */
+    if ((nDriverID == -1) && (strDriverName == "ETAS ES581"))
     {
         nDriverID = DRIVER_CAN_ETAS_ES581;
     }
-    else if (strDriverName == "ETAS ES581.4")
-    {
-        nDriverID = DRIVER_CAN_ETAS_ES5814;
-    }
-	else if (strDriverName == "ETAS ES582.1")
-	{
-		nDriverID = DRIVER_CAN_ETAS_ES5821;
-	}
-    else if(strDriverName == "IntrepidCS neoVI")
-    {
-        nDriverID = DRIVER_CAN_ICS_NEOVI;
-    }
-    else if(strDriverName == "IXXAT VCI")
-    {
-        nDriverID = DRIVER_CAN_IXXAT;
-    }
-    else if(strDriverName == "Kvaser CAN")
-    {
-        nDriverID = DRIVER_CAN_KVASER_CAN;
-    }
-    else if(strDriverName == "MHS Tiny-CAN")
-    {
-        nDriverID = DRIVER_CAN_MHS;
-    }
-    else if(strDriverName == "PEAK USB")
-    {
-        nDriverID = DRIVER_CAN_PEAK_USB;
-    }
-    else
+
+    /* Unknown driver names fall back to simulation */
+    if (nDriverID == -1)
     {
         nDriverID = DRIVER_CAN_STUB;
     }
+
     return nDriverID;
 }
 
