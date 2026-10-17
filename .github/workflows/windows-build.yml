@@ -53,7 +53,8 @@ jobs:
           $buildExitCode = 0
 
           try {
-            & .\scripts\build-windows.ps1 -Version '${{ steps.version.outputs.version }}' *> $buildLog
+            & .\scripts\build-windows.ps1 -Version '${{ steps.version.outputs.version }}' *>&1 |
+              Tee-Object -FilePath $buildLog
             if ($LASTEXITCODE -ne 0) {
               $buildExitCode = $LASTEXITCODE
             }
@@ -86,8 +87,6 @@ jobs:
           | ---: | ---: | ---: |
           | $errorCount | $warningCount | $buildExitCode |
           "@ | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
-
-          Get-Content -LiteralPath $buildLog
 
           if ($buildExitCode -ne 0) {
             throw "BUSMASTER build failed with exit code $buildExitCode. See the Windows build diagnostics artifact."
