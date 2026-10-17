@@ -13,10 +13,10 @@
 // ****** Windows
 #include <windows.h>
 
-#define int32_t __int32
-#define uint32_t unsigned __int32
-#define int16_t __int16
-#define uint16_t unsigned __int16
+// Use the platform stdint definitions instead of the historical local
+// macros, which collided with <stdint.h> pulls from other headers under
+// modern MSVC (error C2632 'short' followed by 'short').
+#include <stdint.h>
 
 #define CALLBACK_TYPE CALLBACK
 #define DRV_LOCK_TYPE CRITICAL_SECTION

@@ -53,11 +53,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">.\DebugU\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">.\DebugU\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">.\ReleaseUMinSize\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">.\ReleaseUMinSize\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">
     </LinkIncremental>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\EXTERNAL\zlib\include;$(SolutionDir)\EXTERNAL\libxml2\include;$(IncludePath)</IncludePath>
@@ -100,7 +96,6 @@ exit 0</Command>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>.\DebugU/DMGraph.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\DebugU/</AssemblerListingLocation>
-      <ObjectFileName>.\DebugU/</ObjectFileName>
       <ProgramDataBaseFileName>.\DebugU/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -113,22 +108,18 @@ exit 0</Command>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)/bin/$(OutDir)DMGraph.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\DMGraph.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\DebugU/DMGraph.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(SolutionDir)/bin/$(OutDir)DMGraph.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\DebugU/DMGraph.bsc</OutputFile>
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">
@@ -167,7 +158,6 @@ exit 0</Command>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\ReleaseUMinSize/</AssemblerListingLocation>
-      <ObjectFileName>.\ReleaseUMinSize/</ObjectFileName>
       <ProgramDataBaseFileName>.\ReleaseUMinSize/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -180,27 +170,22 @@ exit 0</Command>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)/bin/$(OutDir)DMGraph.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\DMGraph.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\ReleaseUMinSize/DMGraph.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(SolutionDir)/bin/$(OutDir)DMGraph.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <IgnoreSpecificDefaultLibraries>daouuid.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\ReleaseUMinSize/DMGraph.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)/bin/$(OutDir)DMGraph.dll" "$(SolutionDir)BIN/busmaster_debug/"
-copy "$(SolutionDir)/bin/$(OutDir)DMGraph.dll" "$(SolutionDir)BIN/Release/"</Command>
+      <Command></Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">

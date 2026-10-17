@@ -61,12 +61,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='busmaster_debug|Win32'">$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='busmaster_debug|Win32'">$(Configuration)\</IntDir>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\EXTERNAL\zlib\include;$(SolutionDir)\EXTERNAL\libxml2\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(SolutionDir)\EXTERNAL\libxml2\lib;$(SolutionDir)\EXTERNAL\zlib\lib;$(LibraryPath)</LibraryPath>
     <ExternalIncludePath>$(SolutionDir)Include;$(ExternalIncludePath)</ExternalIncludePath>
@@ -93,12 +87,10 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ObjectFileName>$(SolutionDir)/bin/DumpFiles/$(IntDir)/OBJ/$(TargetName)/</ObjectFileName>
       <ForcedIncludeFiles>targetver.h</ForcedIncludeFiles>
     </ClCompile>
     <Lib>
-      <AdditionalOptions>"$(SolutionDir)/BIN/Libs/$(OutDir)Utils.lib" %(AdditionalOptions)</AdditionalOptions>
-      <OutputFile>$(SolutionDir)/BIN/Libs/$(OutDir)CommonClass.lib</OutputFile>
+      <AdditionalOptions>"$(BusmasterLibDir)Utils.lib" %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -112,12 +104,10 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ObjectFileName>$(SolutionDir)/bin/DumpFiles/$(IntDir)/OBJ/$(TargetName)/</ObjectFileName>
       <ForcedIncludeFiles>targetver.h</ForcedIncludeFiles>
     </ClCompile>
     <Lib>
-      <AdditionalOptions>"$(SolutionDir)/BIN/Libs/$(OutDir)Utils.lib" %(AdditionalOptions)</AdditionalOptions>
-      <OutputFile>$(SolutionDir)/BIN/Libs/$(OutDir)CommonClass.lib</OutputFile>
+      <AdditionalOptions>"$(BusmasterLibDir)Utils.lib" %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -131,12 +121,10 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <ObjectFileName>$(SolutionDir)/bin/DumpFiles/$(IntDir)/OBJ/$(TargetName)/</ObjectFileName>
       <ForcedIncludeFiles>targetver.h</ForcedIncludeFiles>
     </ClCompile>
     <Lib>
-      <AdditionalOptions>"$(SolutionDir)/BIN/Libs/$(OutDir)Utils.lib" %(AdditionalOptions)</AdditionalOptions>
-      <OutputFile>$(SolutionDir)/BIN/Libs/$(OutDir)CommonClass.lib</OutputFile>
+      <AdditionalOptions>"$(BusmasterLibDir)Utils.lib" %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>

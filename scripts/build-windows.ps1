@@ -68,6 +68,12 @@ try {
             throw "MSBuild failed for $solution with exit code $LASTEXITCODE."
         }
     }
+
+    Write-Host 'Deploying runtime bundle to Sources\BUSMASTER\BIN\Release'
+    & (Join-Path $PSScriptRoot 'deploy-runtime.ps1')
+    if ($LASTEXITCODE -ne 0) {
+        throw "deploy-runtime.ps1 failed with exit code $LASTEXITCODE."
+    }
 }
 finally {
     if ($null -ne $originalVersionHeader) {

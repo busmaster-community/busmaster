@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Shared build output layout for all projects built from this solution.
+
+  All build outputs (executables, driver DLLs, static and import libraries,
+  PDBs, object files) are written out-of-tree under the solution's build\
+  directory - one folder per configuration. The distribution folder
+  Sources\BUSMASTER\BIN\Release is assembled separately by
+  scripts\deploy-runtime.ps1 from tracked inputs (Externals\) and these build
+  outputs; nothing in BIN\ is produced by the compiler or linker directly.
+
+  $(MSBuildProjectName) is used for IntDir instead of $(ProjectName) because
+  it is defined before this file is imported; $(ProjectName) is a VC++ property
+  that is still empty at that point. BusmasterLibDir is an alias of OutDir
+  kept so lib references in the project files stay self-describing.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)build\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(MSBuildProjectName)\$(Configuration)\</IntDir>
+    <BusmasterLibDir>$(OutDir)</BusmasterLibDir>
+  </PropertyGroup>
+</Project>
