@@ -1,6 +1,8 @@
 param(
     [ValidateRange(1, 1024)]
-    [int]$MaxCpuCount = [Environment]::ProcessorCount
+    [int]$MaxCpuCount = [Environment]::ProcessorCount,
+    [ValidatePattern('^\d+\.\d+\.\d+$')]
+    [string]$Version
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,19 +30,47 @@ $solutions = @(
     'Sources\BUSMASTER\BUSMASTER.sln'
 )
 
-foreach ($solution in $solutions) {
-    $solutionPath = Join-Path $repositoryRoot $solution
-    if (-not (Test-Path $solutionPath)) {
-        throw "Build solution not found: $solutionPath"
+$versionHeader = Join-Path $repositoryRoot 'Sources\BUSMASTER\Application\BuildVersion.h'
+$originalVersionHeader = $null
+
+try {
+    if ($Version) {
+        $versionParts = $Version.Split('.') | ForEach-Object { [int]$_ }
+        if ($versionParts | Where-Object { $_ -gt 255 }) {
+            throw 'Each version component must be between 0 and 255 for the application version constants.'
+        }
+
+        $originalVersionHeader = [IO.File]::ReadAllText($versionHeader)
+        $generatedVersionHeader = @"
+#pragma once
+#define BUSMASTER_VERSION_MAJOR $($versionParts[0])
+#define BUSMASTER_VERSION_MINOR $($versionParts[1])
+#define BUSMASTER_VERSION_BUILD $($versionParts[2])
+#define BUSMASTER_VERSION_DISPLAY "Ver $Version"
+"@
+    $generatedVersionHeader += "`r`n"
+        [IO.File]::WriteAllText($versionHeader, $generatedVersionHeader, [Text.UTF8Encoding]::new($false))
     }
 
-    Write-Host "Building $solution (Release|Win32; MSBuild nodes: $MaxCpuCount)"
-    & $msbuildPath $solutionPath "/m:$MaxCpuCount" /nologo /verbosity:minimal `
-        '/p:Configuration=Release' `
-        '/p:Platform=Win32' `
-        '/p:PlatformToolset=v143'
+    foreach ($solution in $solutions) {
+        $solutionPath = Join-Path $repositoryRoot $solution
+        if (-not (Test-Path $solutionPath)) {
+            throw "Build solution not found: $solutionPath"
+        }
 
-    if ($LASTEXITCODE -ne 0) {
-        exit $LASTEXITCODE
+        Write-Host "Building $solution (Release|Win32; MSBuild nodes: $MaxCpuCount)"
+        & $msbuildPath $solutionPath "/m:$MaxCpuCount" /nologo /verbosity:minimal `
+            '/p:Configuration=Release' `
+            '/p:Platform=Win32' `
+            '/p:PlatformToolset=v143'
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "MSBuild failed for $solution with exit code $LASTEXITCODE."
+        }
+    }
+}
+finally {
+    if ($null -ne $originalVersionHeader) {
+        [IO.File]::WriteAllText($versionHeader, $originalVersionHeader, [Text.UTF8Encoding]::new($false))
     }
 }

@@ -82,7 +82,8 @@ const float PI = (float) 3.14159265358979323846;
 #include "afxribbonbar.h"
 
 #include <afxcontrolbars.h>     // Added to support for ribbons and control bars
+#include "BuildVersion.h"
 //3.2.2
-const BYTE VERSION_MAJOR=3;
-const BYTE VERSION_MINOR=2;
-const BYTE VERSION_BUILD=2;
+const BYTE VERSION_MAJOR = BUSMASTER_VERSION_MAJOR;
+const BYTE VERSION_MINOR = BUSMASTER_VERSION_MINOR;
+const BYTE VERSION_BUILD = BUSMASTER_VERSION_BUILD;
