@@ -8,7 +8,7 @@
       <AdditionalIncludeDirectories>..\..\Kernel\ProtocolDefinitions;..\..\Kernel\BusmasterDBNetwork\Include;..\..\Kernel\BusmasterDriverInterface\Include;..\..\Kernel\Utilities\;..\..\Kernel\BusmasterKernel\;..\..\Kernel\BusmasterDBNetwork\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalOptions>"..\..\Kernel\bin\$(Configuration)\Utilities.lib" "..\..\Kernel\BusmasterKernel\$(Configuration)\BusmasterKernel.lib" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>"$(SolutionDir)..\Kernel\build\$(Configuration)\Utilities.lib" "$(SolutionDir)..\Kernel\build\$(Configuration)\BusmasterKernel.lib" %(AdditionalOptions)</AdditionalOptions>
     </Link> 
   </ItemDefinitionGroup>
   <ItemGroup />
