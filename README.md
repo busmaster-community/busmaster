@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/busmaster-community/busmaster/actions/workflows/windows-build.yml"><img src="https://github.com/busmaster-community/busmaster/actions/workflows/windows-build.yml/badge.svg" alt="Windows build"></a>
   <a href="COPYING.LESSER.txt"><img src="https://img.shields.io/badge/license-LGPL--3.0-blue.svg" alt="License: LGPL v3"></a>
-  <a href="https://github.com/busmaster-community/busmaster/releases"><img src="https://img.shields.io/github/v/release/busmaster-community/busmaster" alt="Latest release"></a>
+  <a href="https://github.com/busmaster-community/busmaster/releases"><img src="https://img.shields.io/github/v/release/busmaster-community/busmaster?cacheSeconds=300" alt="Latest release"></a>
 </p>
 
 **BUSMASTER** is a monitoring, analysis and simulation tool for **CAN** and **LIN** bus systems on Windows. It is developed in C++ with MFC/ATL, released under the GNU Lesser General Public License v3, and maintained by the community — originally open-sourced by Bosch (RBEI-ETAS).
