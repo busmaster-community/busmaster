@@ -72,26 +72,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     </LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='busmaster_debug|Win32'">$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='busmaster_debug|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='busmaster_debug|Win32'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='busmaster_debug|Win32'">false</GenerateManifest>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\EXTERNAL\zlib\include;$(SolutionDir)\EXTERNAL\libxml2\include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(SolutionDir)\EXTERNAL\libxml2\lib;$(SolutionDir)\EXTERNAL\zlib\lib;$(LibraryPath)</LibraryPath>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\BIN\Release\$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='busmaster_debug|Win32'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\EXTERNAL\zlib\include;$(SolutionDir)\EXTERNAL\libxml2\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(SolutionDir)\EXTERNAL\libxml2\lib;$(SolutionDir)\EXTERNAL\zlib\lib;$(LibraryPath)</LibraryPath>
-    <TargetName>..\..\BIN\busmaster_debug\$(ProjectName)</TargetName>
     <ExecutablePath>$(VCInstallDir)bin;$(WindowsSdkDir_71A)bin;$(WindowsSDK_ExecutablePath_x86);$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(ProgramFiles)\HTML Help Workshop;$(MSBuildToolsPath32);$(VSInstallDir);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
     <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
@@ -101,7 +93,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\EXTERNAL\zlib\include;$(SolutionDir)\EXTERNAL\libxml2\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(SolutionDir)\EXTERNAL\libxml2\lib;$(SolutionDir)\EXTERNAL\zlib\lib;$(LibraryPath)</LibraryPath>
-    <TargetName>..\..\BIN\Debug\$(ProjectName)</TargetName>
     <GenerateManifest>false</GenerateManifest>
     <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
@@ -125,7 +116,6 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>.\Debug/CAN_Monitor.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
-      <ObjectFileName>$(SolutionDir)/bin/DumpFiles/$(IntDir)/OBJ/$(ProjectName)/</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level4</WarningLevel>
@@ -138,23 +128,21 @@
       <AdditionalIncludeDirectories>$(VC_IncludePath);$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalOptions>"$(SolutionDir)/BIN/Libs/$(OutDir)Utils.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)DataTypes.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)ProjectConfiguration.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)NodeSimEx.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)FrameProcessor.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)Replay.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)SignalWatch.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)Filter.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)CommonClass.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)PSDI_CAN.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)SignalDefiner.lib" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>"$(BusmasterLibDir)Utils.lib"
+"$(BusmasterLibDir)DataTypes.lib"
+"$(BusmasterLibDir)ProjectConfiguration.lib"
+"$(BusmasterLibDir)NodeSimEx.lib"
+"$(BusmasterLibDir)FrameProcessor.lib"
+"$(BusmasterLibDir)Replay.lib"
+"$(BusmasterLibDir)SignalWatch.lib"
+"$(BusmasterLibDir)Filter.lib"
+"$(BusmasterLibDir)CommonClass.lib"
+"$(BusmasterLibDir)PSDI_CAN.lib"
+"$(BusmasterLibDir)SignalDefiner.lib" %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Winmm.lib;shlwapi.lib;htmlhelp.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)/bin/$(OutDir)BUSMASTER.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(SolutionDir)/bin/DumpFiles/$(IntDir)/PDB/$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -162,10 +150,9 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy ".\BUSMASTER_Interface.h" "$(SolutionDir)\bin\$(OutDir)BUSMASTER_Interface.h"
-copy ".\BUSMASTER_Interface.c" "$(SolutionDir)\bin\$(OutDir)BUSMASTER_Interface.c"
-copy ".\$(OutDir)BUSMASTER.tlb" "$(SolutionDir)\bin\$(OutDir)BUSMASTER.tlb"
-copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
+      <Command>copy ".\BUSMASTER_Interface.h" "$(OutDir)BUSMASTER_Interface.h"
+copy ".\BUSMASTER_Interface.c" "$(OutDir)BUSMASTER_Interface.c"
+copy ".\Res\Splsh16.bmp" "$(OutDir)Splsh16.bmp"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -191,7 +178,6 @@ copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
-      <ObjectFileName>$(SolutionDir)/bin/DumpFiles/$(IntDir)/OBJ/$(ProjectName)/</ObjectFileName>
       <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
       <BrowseInformation>
       </BrowseInformation>
@@ -205,24 +191,22 @@ copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
       <AdditionalIncludeDirectories>$(VC_IncludePath);$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalOptions>"$(SolutionDir)/BIN/Libs/$(OutDir)Utils.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)DataTypes.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)ProjectConfiguration.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)NodeSimEx.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)FrameProcessor.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)Replay.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)SignalWatch.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)Filter.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)CommonClass.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)PSDI_CAN.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)SignalDefiner.lib" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>"$(BusmasterLibDir)Utils.lib"
+"$(BusmasterLibDir)DataTypes.lib"
+"$(BusmasterLibDir)ProjectConfiguration.lib"
+"$(BusmasterLibDir)NodeSimEx.lib"
+"$(BusmasterLibDir)FrameProcessor.lib"
+"$(BusmasterLibDir)Replay.lib"
+"$(BusmasterLibDir)SignalWatch.lib"
+"$(BusmasterLibDir)Filter.lib"
+"$(BusmasterLibDir)CommonClass.lib"
+"$(BusmasterLibDir)PSDI_CAN.lib"
+"$(BusmasterLibDir)SignalDefiner.lib" %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Winmm.lib;shlwapi.lib;htmlhelp.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)/bin/$(OutDir)BUSMASTER.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>daouuid.lib</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(SolutionDir)/bin/DumpFiles/$(IntDir)/PDB/$(TargetName).pdb</ProgramDatabaseFile>
       <GenerateMapFile>false</GenerateMapFile>
       <MapFileName>
       </MapFileName>
@@ -236,10 +220,9 @@ copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
       <AllowIsolation>true</AllowIsolation>
     </Link>
     <PostBuildEvent>
-      <Command>copy ".\BUSMASTER_Interface.h" "$(SolutionDir)\bin\$(OutDir)BUSMASTER_Interface.h"
-copy ".\BUSMASTER_Interface.c" "$(SolutionDir)\bin\$(OutDir)BUSMASTER_Interface.c"
-copy ".\$(OutDir)BUSMASTER.tlb" "$(SolutionDir)\bin\$(OutDir)BUSMASTER.tlb"
-copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
+      <Command>copy ".\BUSMASTER_Interface.h" "$(OutDir)BUSMASTER_Interface.h"
+copy ".\BUSMASTER_Interface.c" "$(OutDir)BUSMASTER_Interface.c"
+copy ".\Res\Splsh16.bmp" "$(OutDir)Splsh16.bmp"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -266,7 +249,6 @@ copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>.\Release/CAN_Monitor.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
-      <ObjectFileName>$(SolutionDir)/bin/DumpFiles/$(IntDir)/OBJ/$(ProjectName)/</ObjectFileName>
       <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
       <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level4</WarningLevel>
@@ -280,23 +262,21 @@ copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
       <AdditionalIncludeDirectories>$(VC_IncludePath);$(WindowsSDK_IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalOptions>"$(SolutionDir)/BIN/Libs/$(OutDir)DIL_Interface.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)Utils.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)ProjectConfiguration.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)NodeSimEx.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)FrameProcessor.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)Replay.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)SignalWatch.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)Filter.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)CommonClass.lib"
-"$(SolutionDir)/BIN/Libs/$(OutDir)PSDI_CAN.lib" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>"$(BusmasterLibDir)DIL_Interface.lib"
+"$(BusmasterLibDir)Utils.lib"
+"$(BusmasterLibDir)ProjectConfiguration.lib"
+"$(BusmasterLibDir)NodeSimEx.lib"
+"$(BusmasterLibDir)FrameProcessor.lib"
+"$(BusmasterLibDir)Replay.lib"
+"$(BusmasterLibDir)SignalWatch.lib"
+"$(BusmasterLibDir)Filter.lib"
+"$(BusmasterLibDir)CommonClass.lib"
+"$(BusmasterLibDir)PSDI_CAN.lib" %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Winmm.lib;shlwapi.lib;htmlhelp.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)/bin/$(OutDir)BUSMASTER.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(SolutionDir)/bin/DumpFiles/$(IntDir)/PDB/$(TargetName).pdb</ProgramDatabaseFile>
       <GenerateMapFile>false</GenerateMapFile>
       <MapFileName>
       </MapFileName>
@@ -312,10 +292,9 @@ copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>copy ".\BUSMASTER_Interface.h" "$(SolutionDir)\bin\$(OutDir)BUSMASTER_Interface.h"
-copy ".\BUSMASTER_Interface.c" "$(SolutionDir)\bin\$(OutDir)BUSMASTER_Interface.c"
-copy ".\$(OutDir)BUSMASTER.tlb" "$(SolutionDir)\bin\$(OutDir)BUSMASTER.tlb"
-copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
+      <Command>copy ".\BUSMASTER_Interface.h" "$(OutDir)BUSMASTER_Interface.h"
+copy ".\BUSMASTER_Interface.c" "$(OutDir)BUSMASTER_Interface.c"
+copy ".\Res\Splsh16.bmp" "$(OutDir)Splsh16.bmp"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -1177,7 +1156,7 @@ copy ".\Res\Splsh16.bmp" "$(SolutionDir)\bin\$(OutDir)Splsh16.bmp"
     <Image Include="Res\ShowRibbon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="..\BIN\Release\BUSMASTER.exe.manifest">
+    <Manifest Include="..\Externals\Assets\BUSMASTER.exe.manifest">
       <SubType>Designer</SubType>
     </Manifest>
   </ItemGroup>

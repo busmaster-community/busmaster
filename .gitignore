@@ -39,16 +39,16 @@
 .vs/
 
 # Per-project build output directories (Release, ReleaseU*, Release_*,
-# Debug, DebugU, busmaster_debug). Note: Sources\BUSMASTER\BIN\Release and
-# BIN\Debug also contain vendor runtime DLLs that are tracked in git; those
-# stay tracked regardless, but newly vendored binaries there need
-# `git add -f`.
+# Debug, DebugU, busmaster_debug). Sources\BUSMASTER\BIN is a purely
+# generated distribution folder: it is populated by scripts\deploy-runtime.ps1
+# and is ignored wholesale, so nothing inside it is ever tracked.
 Sources/**/Release*/
 Sources/**/Debug*/
 Sources/**/busmaster_debug/
 
 # MSBuild solution output folders
 Sources/Kernel/Bin/
+Sources/BUSMASTER/BIN/
 Sources/BUSMASTER/BIN/DumpFiles/
 Sources/BUSMASTER/CAN_IXXAT_VCI/bin/
 
