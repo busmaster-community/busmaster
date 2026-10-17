@@ -25,6 +25,7 @@
 #include "DILL_Dummy.h"
 #include "DIL_LIN.h"
 #include "include/Error.h"
+#include "../../BUSMASTER/DataTypes/DIL_DriverCatalog.h"
 
 typedef HRESULT (*GETIDIL_LIN_CONTROLLER)(void** ppvInterface);
 static GETIDIL_LIN_CONTROLLER pfGetIDILLIN_Controller;
@@ -32,35 +33,27 @@ static CDIL_LIN_DUMMY* sg_pouDIL_LIN_DUMMY = new CDIL_LIN_DUMMY;
 
 #define VALIDATE_LIN_POINTER(Ptr) if (Ptr == nullptr) {return S_FALSE;}
 
-enum
+/**
+ * \brief     Find a LIN driver entry in the catalog by its driver ID
+ *
+ * The driver IDs, DLL names and menu labels all live in the driver catalog
+ * (DIL_DriverCatalog.h) - the single source of truth for the driver list.
+ * The "Deactivate" entry has no library; a lookup that finds it (or finds
+ * nothing) reports it with a nullptr DLL name.
+ */
+static const SDILDriverEntry* pGetLINDriverEntry(DWORD dwDriverID)
 {
-    DRIVER_LIN_ISOLAR_EVE_VLIN = 0,
-    DRIVER_LIN_VECTOR_XL,
-    DRIVER_LIN_ETAS_BOA,
-    DRIVER_LIN_PEAK_USB,
-    DRIVER_LIN_KVASER,
-    DIL_LIN_TOTAL,
-    DAL_LIN_NONE = ~0x0
-};
+    const int nCount = sizeof(sg_asDriverCatalogLIN) / sizeof(sg_asDriverCatalogLIN[0]);
+    for (int i = 0; i < nCount; i++)
+    {
+        if (sg_asDriverCatalogLIN[i].m_dwDriverID == dwDriverID)
+        {
+            return &sg_asDriverCatalogLIN[i];
+        }
+    }
 
-class ENTRY_DIL
-{
-public:
-    DWORD           m_dwDIL;
-    std::string          m_acDIL;
-};
-
-static ENTRY_DIL sg_ListDIL[] =
-{
-    // Added Short cut keys
-    /* simulation should be the first entry... */
-    {DAL_LIN_NONE, "&Deactivate"},
-    {DRIVER_LIN_ETAS_BOA, "ETAS &BOA"},
-    {DRIVER_LIN_ISOLAR_EVE_VLIN,"ETAS &ISOLAR-EVE"},
-    {DRIVER_LIN_PEAK_USB,"&PEAK USB"},
-    {DRIVER_LIN_VECTOR_XL, "&Vector XL"},
-    {DRIVER_LIN_KVASER, "&Kvaser LIN"},
-};
+    return nullptr;
+}
 
 CDIL_LIN::CDIL_LIN()
 {
@@ -133,11 +126,11 @@ DWORD CDIL_LIN::DILL_GetDILList(bool /*bAvailable*/, DILLIST* List)
 
     if (List != nullptr)
     {
-        for (int i = 0; i < sizeof(sg_ListDIL)/sizeof(ENTRY_DIL); i++)
+        const int nCount = sizeof(sg_asDriverCatalogLIN) / sizeof(sg_asDriverCatalogLIN[0]);
+        for (int i = 0; i < nCount; i++)
         {
-            (*List)[i].m_acName = sg_ListDIL[i].m_acDIL;
-            //_tcscpy((*List)[i].m_acName, sg_ListDIL[i].m_acDIL);
-            (*List)[i].m_dwDriverID = sg_ListDIL[i].m_dwDIL;
+            (*List)[i].m_acName = sg_asDriverCatalogLIN[i].m_pcMenuLabel;
+            (*List)[i].m_dwDriverID = sg_asDriverCatalogLIN[i].m_dwDriverID;
             Result++;
         }
     }
@@ -186,44 +179,19 @@ HRESULT CDIL_LIN::DILL_SelectDriver(DWORD dwDriverID, HWND hWndOwner)
             m_hDll = nullptr;
         }
 
-        switch(dwDriverID)
+        const SDILDriverEntry* pEntry = pGetLINDriverEntry(dwDriverID);
+
+        // Unknown IDs and the "Deactivate" entry (no library) both fall back
+        // to the dummy interface
+        if ((pEntry == nullptr) || (pEntry->m_pcDILLib == nullptr))
         {
-
-            case DRIVER_LIN_ISOLAR_EVE_VLIN:
-                m_hDll = LoadLibrary("LIN_ISOLAR_EVE_VLIN.dll");
-                break;
-
-                /* case DRIVER_LIN_DEACTIVATE_VLIN:
-                 if (m_hDll == nullptr)
-                 {
-                     hResult = DAL_INVALID;
-                     FreeLibrary(m_hDll);
-                     m_dwDriverID = DAL_LIN_NONE;
-                 }
-                 else
-                 {
-                     hResult = ERR_LOAD_DRIVER;
-                     pILog->vLogAMessage(A2T(__FILE__), __LINE__, _("LIN not Active..."));
-                 }
-                     return hResult;*/
-            case DRIVER_LIN_VECTOR_XL:
-                m_hDll = LoadLibrary("LIN_Vector_XL.dll");
-                break;
-            case DRIVER_LIN_ETAS_BOA:
-                m_hDll = LoadLibrary("LIN_ETAS_BOA.dll");
-                break;
-            case DRIVER_LIN_PEAK_USB:
-                m_hDll = LoadLibrary("LIN_PEAK_USB.dll");
-                break;
-            case DRIVER_LIN_KVASER:
-                m_hDll = LoadLibrary("LIN_Kvaser.dll");
-                break;
-            default:
-                DILL_PerformClosureOperations();
-                vSelectInterface_Dummy();
-                m_dwDriverID = DAL_LIN_NONE;
-                return hResult;
+            DILL_PerformClosureOperations();
+            vSelectInterface_Dummy();
+            m_dwDriverID = DAL_LIN_NONE;
+            return hResult;
         }
+
+        m_hDll = LoadLibrary(pEntry->m_pcDILLib);
 
         if ( m_hDll == nullptr )
         {

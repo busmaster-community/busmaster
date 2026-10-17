@@ -36,61 +36,32 @@
 #include "..\..\CAN_iVIEW/CAN_i-VIEW_Extern.h"
 #include "..\..\CAN_NSI/CAN_NSI_Extern.h"*/
 #include "DIL_CAN.h"
+#include "../../BUSMASTER/DataTypes/DIL_DriverCatalog.h"
 #include "../../BUSMASTER/Utility/MultiLanguageSupport.h"
 
 typedef HRESULT (*GETIDIL_CAN_CONTROLLER)(void** ppvInterface);
 static GETIDIL_CAN_CONTROLLER pfGetIDILCAN_Controller;
 //static CDIL_CAN_DUMMY* sg_pouDIL_CAN_DUMMY = new CDIL_CAN_DUMMY;
 
-class ENTRY_DIL
+/**
+ * \brief     Find a CAN driver entry in the catalog by its driver ID
+ *
+ * The driver IDs, DLL names and menu labels all live in the driver catalog
+ * (DIL_DriverCatalog.h) - the single source of truth for the driver list.
+ */
+static const SDILDriverEntry* pGetCANDriverEntry(DWORD dwDriverID)
 {
-public:
-    DWORD           m_dwDIL;
-    std::string          m_acDIL;
+    const int nCount = sizeof(sg_asDriverCatalogCAN) / sizeof(sg_asDriverCatalogCAN[0]);
+    for (int i = 0; i < nCount; i++)
+    {
+        if (sg_asDriverCatalogCAN[i].m_dwDriverID == dwDriverID)
+        {
+            return &sg_asDriverCatalogCAN[i];
+        }
+    }
 
-};
-
-enum
-{
-    DRIVER_CAN_STUB = 0,
-    DRIVER_CAN_PEAK_USB,
-    DRIVER_CAN_ICS_NEOVI,
-    DRIVER_CAN_ETAS_BOA,
-    DRIVER_CAN_ETAS_ES581,
-    DRIVER_CAN_ETAS_ES5814,
-	DRIVER_CAN_ETAS_ES5821,
-    DRIVER_CAN_VECTOR_XL,
-    DRIVER_CAN_KVASER_CAN,
-    DRIVER_CAN_MHS,
-    DRIVER_CAN_NSI,
-    DRIVER_CAN_IXXAT,
-    DRIVER_CAN_VSCOM,
-    DRIVER_CAN_IVIEW,
-    DRIVER_CAN_ISOLAR,
-    DIL_TOTAL,          // Its value must be <= MAX_DILS
-    DAL_NONE = ~0x0
-};
-static ENTRY_DIL sg_ListDIL[] =
-{
-    // Added Short cut keys
-    /* simulation should be the first entry... */
-    {DRIVER_CAN_STUB,       "&Simulation"       },
-    /* ...all other drivers should be in alphabetical order */
-    {DRIVER_CAN_ETAS_BOA,   "ETAS &BOA"         },
-    {DRIVER_CAN_ETAS_ES581, "ETAS &ES581.3"     },
-    {DRIVER_CAN_ETAS_ES5814, "ETAS ES581.&4"    },
-	{DRIVER_CAN_ETAS_ES5821, "ETAS ES582.&1"	},
-    {DRIVER_CAN_ISOLAR,     "ETAS ISO&LAR-EVE"  },
-    {DRIVER_CAN_IVIEW,      "&i-VIEW"           },
-    {DRIVER_CAN_ICS_NEOVI,  "IntrepidCS ne&oVI" },
-    {DRIVER_CAN_IXXAT,      "I&XXAT VCI"        },
-    {DRIVER_CAN_KVASER_CAN, "&Kvaser CAN"       },
-    {DRIVER_CAN_MHS,        "&MHS Tiny-CAN"     },
-    {DRIVER_CAN_NSI,        "&NSI CAN-API"      },
-    {DRIVER_CAN_PEAK_USB,   "&PEAK USB"         },
-    {DRIVER_CAN_VECTOR_XL,  "&Vector XL"        },
-    {DRIVER_CAN_VSCOM,      "VScom &CAN-API"    },
-};
+    return nullptr;
+}
 
 CDIL_CAN::CDIL_CAN()
 {
@@ -218,10 +189,11 @@ DWORD CDIL_CAN::DILC_GetDILList(bool /*bAvailable*/, DILLIST* List)
 
     if (List != nullptr)
     {
-        for (int i = 0; i < sizeof(sg_ListDIL)/sizeof(ENTRY_DIL); i++)
+        const int nCount = sizeof(sg_asDriverCatalogCAN) / sizeof(sg_asDriverCatalogCAN[0]);
+        for (int i = 0; i < nCount; i++)
         {
-            (*List)[i].m_acName = sg_ListDIL[i].m_acDIL;
-            (*List)[i].m_dwDriverID = sg_ListDIL[i].m_dwDIL;
+            (*List)[i].m_acName = sg_asDriverCatalogCAN[i].m_pcMenuLabel;
+            (*List)[i].m_dwDriverID = sg_asDriverCatalogCAN[i].m_dwDriverID;
             Result++;
         }
     }
@@ -304,66 +276,32 @@ HRESULT CDIL_CAN::DILC_SelectDriver(DWORD dwDriverID, HWND hWndOwner)
             m_hDll = nullptr;
         }
 
-        switch(dwDriverID)
+        // Deactivation is not part of the driver catalog
+        if (dwDriverID == DAL_NONE)
         {
-            case DRIVER_CAN_PEAK_USB:
-                m_hDll = LoadLibrary("CAN_PEAK_USB.dll");
-                break;
+            DILC_PerformClosureOperations();
+            vSelectInterface_Dummy();
+            m_dwDriverID = DAL_NONE;
+            return hResult;
+        }
 
-            case DRIVER_CAN_ICS_NEOVI:
-            case DRIVER_CAN_ETAS_ES581:
-                m_hDll = LoadLibrary("CAN_ICS_neoVI.dll");
-                break;
-            case DRIVER_CAN_ETAS_ES5814:
-			case DRIVER_CAN_ETAS_ES5821:
-            case DRIVER_CAN_ETAS_BOA:
-                m_hDll = vLoadEtasBoaLibrary();
-                break;
+        const SDILDriverEntry* pEntry = pGetCANDriverEntry(dwDriverID);
+        if (pEntry == nullptr)
+        {
+            hResult = DAL_INVALID;
+            m_dwDriverID = DAL_NONE;
+            return hResult;
+        }
 
-            case DRIVER_CAN_IVIEW:
-                m_hDll = LoadLibrary("CAN_i-VIEW.dll");
-                break;
-
-            case DRIVER_CAN_VECTOR_XL:
-                m_hDll = LoadLibrary("CAN_Vector_XL.dll");
-                break;
-
-            case DRIVER_CAN_IXXAT:
-                m_hDll = LoadLibrary("CAN_IXXAT_VCI.dll");
-                break;
-
-            case DRIVER_CAN_KVASER_CAN:
-                m_hDll = LoadLibrary("CAN_Kvaser_CAN.dll");
-                break;
-
-            case DRIVER_CAN_STUB:
-                m_hDll = LoadLibrary("CAN_STUB.dll");
-                break;
-
-            case DRIVER_CAN_MHS:
-                m_hDll = LoadLibrary("CAN_MHS.dll");
-                break;
-
-            case DRIVER_CAN_NSI:
-                m_hDll = LoadLibrary("CAN_NSI.dll");
-                break;
-
-            case DRIVER_CAN_VSCOM:
-                m_hDll = LoadLibrary("CAN_VSCOM.dll");
-                break;
-            case DRIVER_CAN_ISOLAR:
-                m_hDll = LoadLibrary("CAN_ISOLAR_EVE_VCAN.dll");
-                break;
-            case DAL_NONE:
-                DILC_PerformClosureOperations();
-                vSelectInterface_Dummy();
-                m_dwDriverID = DAL_NONE;
-                return hResult;
-
-            default:
-                hResult = DAL_INVALID;
-                m_dwDriverID = DAL_NONE;
-                return hResult;
+        // Entries with a nullptr DLL name resolve their library at runtime
+        // (the ETAS BOA entries probe the registry for the installed BOA version)
+        if (pEntry->m_pcDILLib != nullptr)
+        {
+            m_hDll = LoadLibrary(pEntry->m_pcDILLib);
+        }
+        else
+        {
+            m_hDll = vLoadEtasBoaLibrary();
         }
 
         if (m_hDll == nullptr)
