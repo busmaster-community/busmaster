@@ -1469,7 +1469,7 @@ IDR_BUSMASTER_RIBBON    RT_RIBBON_XML           "res\\ribbon1.mfcribbon-ms"
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "BUSMASTER"
+    IDR_MAINFRAME           "BUSMASTER Community"
     IDR_NEWEDTYPE           "\nNewEd\nNewEd\nC Files\n.c\nNewEd.Document\nNewEditor "
     IDS_ERROR_LOCK_KEY_INCORRECT 
                             "Licence key is not correct \n Application will abort"
@@ -1483,7 +1483,7 @@ END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_APP_TITLE       "BUSMASTER"
+    AFX_IDS_APP_TITLE       "BUSMASTER Community"
     AFX_IDS_IDLEMESSAGE     " "
     AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
 END
