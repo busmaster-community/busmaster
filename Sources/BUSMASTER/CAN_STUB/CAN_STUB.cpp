@@ -35,6 +35,8 @@
 //#include "Include/DIL_CommonDefs.h"
 
 //#include "DataTypes/MsgBufAll_DataTypes.h"
+#include <objbase.h>
+#include <oleauto.h>
 #include "BusEmulation/BusEmulation.h"
 #include "BusEmulation/BusEmulation_i.c"
 //#include "DataTypes/DIL_DataTypes.h"
@@ -317,6 +319,136 @@ static void GetSystemErrorString()
 }
 
 /* USEFUL MACROS AND FUNCTIONS: END */
+
+/**
+ * \brief Ensures the BusEmulation simulation server can be activated.
+ *
+ * Historically BusEmulation.exe was registered system-wide by an elevated
+ * '/RegServer' post-build step. When that step was skipped (or a stale path
+ * from an earlier build survived), activation of the simulation engine
+ * failed and the application hung on the splash screen. Registration now
+ * happens per user on demand instead: HKCU class entries override HKLM
+ * ones and writing them requires no elevation. The registered path always
+ * refers to the BusEmulation.exe beside this DLL, which also heals
+ * registrations left behind by builds at other locations.
+ *
+ * \return S_OK when the server is ready for activation, error otherwise
+ */
+static HRESULT EnsureBusEmulationRegisteredForUser(void)
+{
+    /* Locate this DLL to derive the directory shared with the server */
+    HMODULE hOwnModule = nullptr;
+    if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                           GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           reinterpret_cast<LPCSTR>(&EnsureBusEmulationRegisteredForUser),
+                           &hOwnModule) == 0)
+    {
+        return E_FAIL;
+    }
+
+    char acDllPath[MAX_PATH] = {'\0'};
+    if (GetModuleFileNameA(hOwnModule, acDllPath, sizeof(acDllPath)) == 0)
+    {
+        return E_FAIL;
+    }
+
+    /* Strip the file name to obtain the common binary directory */
+    char* pcLastDirSep = strrchr(acDllPath, '\\');
+    if (pcLastDirSep == nullptr)
+    {
+        return E_FAIL;
+    }
+    *pcLastDirSep = '\0';
+
+    /* The simulation server is deployed alongside this driver DLL */
+    char acServerPath[MAX_PATH] = {'\0'};
+    sprintf_s(acServerPath, sizeof(acServerPath), "%s\\BusEmulation.exe", acDllPath);
+
+    if (GetFileAttributesA(acServerPath) == INVALID_FILE_ATTRIBUTES)
+    {
+        sg_acErrStr = _("BusEmulation.exe not found beside the simulation driver");
+        return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+    }
+
+    /* Format the class identifier of the SimENG coclass */
+    OLECHAR szClsid[64] = {'\0'};
+    if (StringFromGUID2(CLSID_SimENG, szClsid, 64) == 0)
+    {
+        return E_FAIL;
+    }
+    char acClsidKey[MAX_PATH] = {'\0'};
+    sprintf_s(acClsidKey, sizeof(acClsidKey), "Software\\Classes\\CLSID\\%ls\\LocalServer32",
+              szClsid);
+
+    /* Skip the work when the current user already points at this server */
+    char acRegisteredPath[MAX_PATH] = {'\0'};
+    DWORD dwPathSize = sizeof(acRegisteredPath);
+    if (RegGetValueA(HKEY_CURRENT_USER, acClsidKey, nullptr, RRF_RT_REG_SZ,
+                     nullptr, acRegisteredPath, &dwPathSize) == ERROR_SUCCESS)
+    {
+        /* Registration values may carry surrounding quotes */
+        char* pcPath = acRegisteredPath;
+        if (pcPath[0] == '"')
+        {
+            ++pcPath;
+            char* pcQuote = strchr(pcPath, '"');
+            if (pcQuote != nullptr)
+            {
+                *pcQuote = '\0';
+            }
+        }
+        if (_stricmp(pcPath, acServerPath) == 0)
+        {
+            return S_OK;
+        }
+    }
+
+    /* (Re)point the local server registration at the current server */
+    HKEY hClsidKey = nullptr;
+    if (RegCreateKeyExA(HKEY_CURRENT_USER, acClsidKey, 0, nullptr,
+                        REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, nullptr,
+                        &hClsidKey, nullptr) != ERROR_SUCCESS)
+    {
+        return E_FAIL;
+    }
+    char acCommand[MAX_PATH + 2] = {'\0'};
+    sprintf_s(acCommand, sizeof(acCommand), "\"%s\"", acServerPath);
+    HRESULT hResult = (RegSetValueExA(hClsidKey, nullptr, 0, REG_SZ,
+                                      (const BYTE*) acCommand,
+                                      (DWORD) strlen(acCommand) + 1) == ERROR_SUCCESS)
+                      ? S_OK : E_FAIL;
+    RegCloseKey(hClsidKey);
+    if (hResult != S_OK)
+    {
+        return hResult;
+    }
+
+    /* Cross-process marshaling of the dual ISimENG interface is performed
+       by the OLE automation marshaler, which needs the type library of the
+       server registered as well - again per user, again no elevation. The
+       typelib is embedded in BusEmulation.exe as its first resource. */
+    wchar_t szTypeLibPath[MAX_PATH + 4] = {'\0'};
+    MultiByteToWideChar(CP_ACP, 0, acServerPath, -1, szTypeLibPath, MAX_PATH);
+    wcscat_s(szTypeLibPath, L"\\1");
+
+    ITypeLib* pTypeLib = nullptr;
+    hResult = LoadTypeLibEx(szTypeLibPath, REGKIND_NONE, &pTypeLib);
+    if (FAILED(hResult))
+    {
+        szTypeLibPath[wcslen(szTypeLibPath) - 2] = '\0'; // drop the "\1"
+        hResult = LoadTypeLibEx(szTypeLibPath, REGKIND_NONE, &pTypeLib);
+    }
+    if (FAILED(hResult) || (pTypeLib == nullptr))
+    {
+        sg_acErrStr = _("Type library of the simulation server could not be loaded");
+        return FAILED(hResult) ? hResult : E_FAIL;
+    }
+
+    hResult = RegisterTypeLibForUser(pTypeLib, szTypeLibPath, nullptr);
+    pTypeLib->Release();
+
+    return hResult;
+}
 
 static BOOL bGetClientObj(HANDLE hClientHandle, UINT& unClientIndex)
 {
@@ -1029,6 +1161,20 @@ DWORD WINAPI BrokerThreadBusEmulation(LPVOID pVoid)
     // Get hold of the bus simulation and error logger interfaces
     HRESULT hResult = CoInitialize(nullptr);
 
+    /* The simulation server is registered per user on demand; a failure
+       here (BusEmulation.exe missing beside this DLL, registry or type
+       library problems) must fail the broker thread instead of leaving
+       waiters blocked forever. */
+    hResult = EnsureBusEmulationRegisteredForUser();
+    if (hResult != S_OK)
+    {
+        sg_hResult = hResult;
+        // The broker thread is about to exit, fail all future operations fast
+        sg_bBrokerFailed = TRUE;
+        SetEvent(sg_hNotifyFinish);
+        return 0L;
+    }
+
     ISimENG* pISimENG = nullptr;
     hResult = CoCreateInstance(CLSID_SimENG, nullptr, CLSCTX_LOCAL_SERVER,
                                IID_ISimENG, (LPVOID*) &pISimENG);
@@ -1041,6 +1187,7 @@ DWORD WINAPI BrokerThreadBusEmulation(LPVOID pVoid)
         {
             hResult = E_FAIL;
         }
+        sg_acErrStr = _("Bus simulation engine could not be started");
         sg_hResult = hResult;
         // The broker thread is about to exit, fail all future operations fast
         sg_bBrokerFailed = TRUE;
