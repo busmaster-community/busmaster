@@ -2,7 +2,13 @@ name: Windows build
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -12,14 +18,88 @@ jobs:
     name: Release (Win32)
     runs-on: windows-2022
     timeout-minutes: 45
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release: ${{ steps.version.outputs.release }}
+      artifact_name: ${{ steps.package.outputs.artifact_name }}
 
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      - name: Calculate semantic version
+        id: version
+        shell: pwsh
+        run: ./scripts/get-semantic-version.ps1
+
       - name: Build BUSMASTER
         shell: pwsh
-        run: .\scripts\build-windows.ps1
+        run: .\scripts\build-windows.ps1 -Version '${{ steps.version.outputs.version }}'
+
+      - name: Package BUSMASTER binaries
+        id: package
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          $binaryDirectory = Join-Path $env:GITHUB_WORKSPACE 'Sources\BUSMASTER\BIN\Release'
+          if (-not (Test-Path (Join-Path $binaryDirectory 'BUSMASTER.exe'))) {
+            throw 'BUSMASTER.exe was not produced by the build.'
+          }
+
+          $stagingDirectory = Join-Path $env:RUNNER_TEMP "busmaster-package-$($env:COMMIT_SHA)"
+          New-Item -ItemType Directory -Path $stagingDirectory | Out-Null
+          Get-ChildItem -LiteralPath $binaryDirectory -Force | Copy-Item -Destination $stagingDirectory -Recurse -Force
+          Get-ChildItem -LiteralPath $stagingDirectory -File -Recurse |
+            Where-Object { $_.Extension -in @('.exp', '.idb', '.ilk', '.iobj', '.ipdb', '.lib', '.map', '.obj', '.pch', '.pdb', '.recipe', '.sbr') } |
+            Remove-Item -Force
+
+          $zipName = "BUSMASTER_$($env:VERSION)_Win32.zip"
+          $zipPath = Join-Path $env:RUNNER_TEMP $zipName
+          Compress-Archive -Path (Join-Path $stagingDirectory '*') -DestinationPath $zipPath -CompressionLevel Optimal
+          "artifact_name=busmaster-$($env:VERSION)-$($env:COMMIT_SHA)" >> $env:GITHUB_OUTPUT
+          "zip_path=$zipPath" >> $env:GITHUB_OUTPUT
+
+      - name: Store build ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.artifact_name }}
+          path: ${{ steps.package.outputs.zip_path }}
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Publish semantic release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.build.outputs.release == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: release-assets
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          tag="v${VERSION}"
+          asset="release-assets/BUSMASTER_${VERSION}_Win32.zip"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$asset" --clobber
+          else
+            gh release create "$tag" "$asset" --target "$TARGET_SHA" \
+              --title "BUSMASTER $tag" --generate-notes
+          fi

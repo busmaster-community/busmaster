@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include "BuildVersion.h"
 
 // Generated Help ID header file
 #define APSTUDIO_HIDDEN_SYMBOLS
@@ -220,7 +221,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,182,7,50,14
     LTEXT           "CAN Driver 1.00.D10",IDC_STAT_DRIVER_VERSION,56,16,122,8
-    LTEXT           "Copyright© 2003 RBEI",IDC_STAT_COPYRIGHT,56,31,122,8
+    LTEXT           "Copyrightï¿½ 2003 RBEI",IDC_STAT_COPYRIGHT,56,31,122,8
     ICON            IDR_MAINFRAME,IDC_STATIC,9,13,20,20
     LTEXT           "_________________________________________________________________",IDC_STAT_LINE3,7,45,221,9,WS_DISABLED
     CONTROL         IDB_BMP_COPYRIGHT,IDC_STATIC,"Static",SS_BITMAP,34,59,167,36
@@ -699,8 +700,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,0,0
- PRODUCTVERSION 1,0,1,0
+ FILEVERSION BUSMASTER_VERSION_MAJOR,BUSMASTER_VERSION_MINOR,BUSMASTER_VERSION_BUILD,0
+ PRODUCTVERSION BUSMASTER_VERSION_MAJOR,BUSMASTER_VERSION_MINOR,BUSMASTER_VERSION_BUILD,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -718,13 +719,13 @@ BEGIN
             VALUE "Comments", "Public Copy"
             VALUE "CompanyName", "RBEI, Bangalore"
             VALUE "FileDescription", "BUSMASTER MFC Application"
-            VALUE "FileVersion", "Ver 3.2.2"
+            VALUE "FileVersion", BUSMASTER_VERSION_DISPLAY
             VALUE "InternalName", "BUSMASTER"
             VALUE "LegalCopyright", "Copyright (C) 2011"
             VALUE "LegalTrademarks", "BOSCH"
             VALUE "OriginalFilename", "BUSMASTER.EXE"
             VALUE "ProductName", "BUSMASTER Application"
-            VALUE "ProductVersion", "Ver 3.2.2"
+            VALUE "ProductVersion", BUSMASTER_VERSION_DISPLAY
         END
     END
     BLOCK "VarFileInfo"
