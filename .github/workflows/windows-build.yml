@@ -19,11 +19,16 @@ jobs:
     name: Release (Win32)
     runs-on: windows-2022
     timeout-minutes: 45
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.version.outputs.version }}
       release: ${{ steps.version.outputs.release }}
       previous_tag: ${{ steps.version.outputs.previous_tag }}
       artifact_name: ${{ steps.package.outputs.artifact_name }}
+      error_count: ${{ steps.build.outputs.error_count }}
+      warning_count: ${{ steps.build.outputs.warning_count }}
+      build_exit_code: ${{ steps.build.outputs.build_exit_code }}
 
     steps:
       - name: Check out source
@@ -40,8 +45,64 @@ jobs:
         run: ./scripts/get-semantic-version.ps1
 
       - name: Build BUSMASTER
+        id: build
         shell: pwsh
-        run: .\scripts\build-windows.ps1 -Version '${{ steps.version.outputs.version }}'
+        run: |
+          $buildLog = Join-Path $env:RUNNER_TEMP 'busmaster-build.log'
+          $diagnosticsPath = Join-Path $env:RUNNER_TEMP 'busmaster-build-diagnostics.md'
+          $buildExitCode = 0
+
+          try {
+            & .\scripts\build-windows.ps1 -Version '${{ steps.version.outputs.version }}' *> $buildLog
+            if ($LASTEXITCODE -ne 0) {
+              $buildExitCode = $LASTEXITCODE
+            }
+          }
+          catch {
+            $_ | Out-String | Add-Content -LiteralPath $buildLog
+            $buildExitCode = 1
+          }
+
+          $buildLines = @(Get-Content -LiteralPath $buildLog)
+          $errorLines = @($buildLines | Where-Object { $_ -match '(?i)\b(?:fatal\s+)?error\s+[A-Z]+\d+\b' })
+          $warningLines = @($buildLines | Where-Object { $_ -match '(?i)\bwarning(?:\s+[A-Z]+\d+\b|\s*:)' })
+          $errorCount = $errorLines.Count
+          $warningCount = $warningLines.Count
+
+          @"
+          Build exit code: $buildExitCode
+          Errors: $errorCount
+          Warnings: $warningCount
+          "@ | Set-Content -LiteralPath $diagnosticsPath -Encoding utf8
+
+          "error_count=$errorCount" | Add-Content -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8
+          "warning_count=$warningCount" | Add-Content -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8
+          "build_exit_code=$buildExitCode" | Add-Content -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8
+
+          @"
+          ### Windows build diagnostics
+
+          | Errors | Warnings | Build exit code |
+          | ---: | ---: | ---: |
+          | $errorCount | $warningCount | $buildExitCode |
+          "@ | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+
+          Get-Content -LiteralPath $buildLog
+
+          if ($buildExitCode -ne 0) {
+            throw "BUSMASTER build failed with exit code $buildExitCode. See the Windows build diagnostics artifact."
+          }
+
+      - name: Store build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-diagnostics-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/busmaster-build.log
+            ${{ runner.temp }}/busmaster-build-diagnostics.md
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Package BUSMASTER binaries
         id: package
@@ -75,6 +136,57 @@ jobs:
           path: ${{ steps.package.outputs.zip_path }}
           if-no-files-found: error
           retention-days: 30
+
+  report-build-diagnostics:
+    name: Report build diagnostics
+    if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && needs.build.outputs.error_count != ''
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Update PR diagnostics comment
+        uses: actions/github-script@v7
+        env:
+          ERROR_COUNT: ${{ needs.build.outputs.error_count }}
+          WARNING_COUNT: ${{ needs.build.outputs.warning_count }}
+          BUILD_EXIT_CODE: ${{ needs.build.outputs.build_exit_code }}
+        with:
+          script: |
+            const marker = '<!-- busmaster-build-diagnostics -->';
+            const passed = process.env.BUILD_EXIT_CODE === '0';
+            const body = `${marker}
+            ### Windows build diagnostics
+
+            - Result: **${passed ? 'passed' : 'failed'}**
+            - Errors: **${process.env.ERROR_COUNT}**
+            - Warnings: **${process.env.WARNING_COUNT}**
+            - [Build log and diagnostics artifact](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find(comment => comment.user?.type === 'Bot' && comment.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
 
   release:
     name: Publish semantic release
