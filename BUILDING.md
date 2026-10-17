@@ -12,10 +12,12 @@ using the Visual Studio 2022 `v143` toolset. The project files still specify
 the legacy `v120_xp` toolset; the script overrides that setting for the newer
 compiler.
 
-GitHub Actions builds pull requests targeting `main` and pushes to `main`.
-Successful builds store a ZIP of `Sources/BUSMASTER/BIN/Release` as a workflow
-artifact. A push to `main` also creates a GitHub release when its commits imply
-a semantic version bump; the ZIP is attached to that release.
+GitHub Actions builds pull requests targeting `main`, pushes to `main`, and
+version tags matching `v*`. Successful builds store a ZIP of
+`Sources/BUSMASTER/BIN/Release` as a workflow artifact. A push to `main` creates
+a release when its commits imply a semantic version bump; pushing a
+`vMAJOR.MINOR.PATCH` tag builds that tagged commit and creates a release with
+the ZIP and generated notes starting at the preceding version tag.
 
 Use Conventional Commit subjects to select the bump:
 
