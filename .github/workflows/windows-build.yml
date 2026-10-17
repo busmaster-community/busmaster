@@ -143,9 +143,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+      pull-requests: write
 
     steps:
       - name: Update PR diagnostics comment
+        id: diagnostics-comment
+        continue-on-error: true
         uses: actions/github-script@v7
         env:
           ERROR_COUNT: ${{ needs.build.outputs.error_count }}
@@ -186,6 +189,12 @@ jobs:
                 body,
               });
             }
+
+      - name: Warn if PR comment is unavailable
+        if: steps.diagnostics-comment.outcome == 'failure'
+        run: |
+          echo "::warning::Could not post diagnostic counts as a PR comment. See the build job summary and diagnostics artifact."
+          echo "PR comment unavailable; diagnostic counts remain in the build job summary and artifact." >> "$GITHUB_STEP_SUMMARY"
 
   release:
     name: Publish semantic release
